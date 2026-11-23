@@ -7,6 +7,35 @@ function toForm(row, defaults) {
   return { ...defaults, ...(row || {}) };
 }
 
+// 与后端一致的"加 N 个月 + 月末收敛"，仅用于表单里实时预览到期日
+function addMonths(dateStr, months) {
+  const [y, m, d] = String(dateStr).split('-').map(Number);
+  const total = y * 12 + (m - 1) + Number(months);
+  const ny = Math.floor(total / 12);
+  const nm = (total % 12) + 1;
+  const dim = new Date(Date.UTC(ny, nm, 0)).getUTCDate();
+  return `${ny}-${String(nm).padStart(2, '0')}-${String(Math.min(d, dim)).padStart(2, '0')}`;
+}
+const CYCLE_MONTHS = { month: 1, quarter: 3, year: 12 };
+
+// 编辑旧数据（只有到期日、没有购买日）时，反推出一个购买日，保证编辑后语义连续
+function subInitial(row) {
+  const base = {
+    name: '', account: '', purchase_date: TODAY, duration: 1, cycle: 'year',
+    cost: '', payment_method: '', remind_days: 7, note: '',
+  };
+  if (!row) return base;
+  const merged = { ...base, ...row };
+  if (!row.purchase_date && row.expiry_date) {
+    const unit = CYCLE_MONTHS[row.cycle] || CYCLE_MONTHS.year;
+    const duration = Number(row.duration) || 1;
+    merged.purchase_date = addMonths(row.expiry_date, -duration * unit);
+    merged.duration = duration;
+  }
+  merged.duration = Number(merged.duration) || 1;
+  return merged;
+}
+
 // 亲人表单
 export function PersonForm({ initial, config, onSave, onClose }) {
   const [f, setF] = useState(() => toForm(initial, {
@@ -117,20 +146,21 @@ export function ItemForm({ initial, config, onSave, onClose }) {
   );
 }
 
-// 会员表单
+// 会员表单：填"购买日期 + 时长 + 单位"，到期日自动算出，不用自己算
 export function SubForm({ initial, config, onSave, onClose }) {
-  const [f, setF] = useState(() => toForm(initial, {
-    name: '', account: '', expiry_date: TODAY, cycle: 'year',
-    cost: '', payment_method: '', remind_days: 7, note: '',
-  }));
+  const [f, setF] = useState(() => subInitial(initial));
   const [saving, setSaving] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const previewExpiry = (f.purchase_date && f.duration)
+    ? addMonths(f.purchase_date, Number(f.duration) * (CYCLE_MONTHS[f.cycle] || CYCLE_MONTHS.year))
+    : null;
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
       await onSave({
         ...f,
+        duration: Number(f.duration),
         cost: f.cost === '' ? null : Number(f.cost),
         remind_days: Number(f.remind_days),
       });
@@ -142,24 +172,29 @@ export function SubForm({ initial, config, onSave, onClose }) {
         <div className="form-row">
           <Field label="名称"><input value={f.name} onChange={set('name')} placeholder="Netflix" required /></Field>
           <Field label="账号归属"><input value={f.account} onChange={set('account')} placeholder="谁的名下" /></Field>
-          <Field label="到期日期"><input type="date" value={f.expiry_date} onChange={set('expiry_date')} required /></Field>
+          <Field label="购买日期"><input type="date" value={f.purchase_date || ''} onChange={set('purchase_date')} required /></Field>
         </div>
         <div className="form-row">
-          <Field label="周期">
+          <Field label="时长" hint="数字"><input type="number" min="1" value={f.duration} onChange={set('duration')} required /></Field>
+          <Field label="单位">
             <select value={f.cycle} onChange={set('cycle')}>
-              <option value="month">月</option>
-              <option value="quarter">季</option>
+              <option value="month">个月</option>
+              <option value="quarter">个季度</option>
               <option value="year">年</option>
             </select>
           </Field>
           <Field label="费用"><input type="number" step="0.01" value={f.cost || ''} onChange={set('cost')} placeholder="68" /></Field>
           <Field label="支付方式"><input value={f.payment_method} onChange={set('payment_method')} placeholder="自动续费/支付宝" /></Field>
         </div>
+        <div className="expiry-preview">
+          到期日期（自动计算）：<strong>{previewExpiry || '请先填购买日期和时长'}</strong>
+          <span className="expiry-hint">到期日无需填写，由购买日期 + 时长自动算出</span>
+        </div>
         <Field label="提前提醒" hint="天"><input type="number" min="0" value={f.remind_days} onChange={set('remind_days')} /></Field>
         <Field label="备注"><textarea value={f.note} onChange={set('note')} rows="2" /></Field>
         <div className="form-actions">
           <button type="button" className="btn ghost" onClick={onClose}>取消</button>
-          <button type="submit" className="btn primary" disabled={saving}>{saving ? '保存中…' : '保存'}</button>
+          <button type="submit" className="btn primary" disabled={saving || !previewExpiry}>{saving ? '保存中…' : '保存'}</button>
         </div>
       </form>
     </Modal>

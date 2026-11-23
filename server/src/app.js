@@ -13,7 +13,17 @@ const {
   computeSubscription,
   buildOverview,
   addMonths,
+  subscriptionExpiry,
 } = require('./services/dates');
+
+// 会员写入前：有购买日+时长时自动算出到期日并落库，前端不必自己算
+function fillSubscriptionExpiry(body) {
+  if (body.purchase_date && body.duration != null) {
+    const unitMonths = config.CYCLE_MONTHS[body.cycle] || config.CYCLE_MONTHS.year;
+    body.expiry_date = addMonths(body.purchase_date, Number(body.duration) * unitMonths);
+  }
+  return body;
+}
 
 const app = express();
 app.use(express.json());
@@ -55,21 +65,24 @@ app.get('/api/subscriptions/view', (req, res) => {
   res.json(rows.map((r) => computeSubscription(r, today)).sort((a, b) => a.days - b.days));
 });
 
-// 会员"标记已续费"：到期日推进一个周期
+// 会员"标记已续费"：购买日推进一个时长（若已过期多个周期，推进到第一个不早于今天的到期日）
 app.post('/api/subscriptions/:id/renew', (req, res) => {
   const row = db.prepare('SELECT * FROM subscriptions WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ error: '记录不存在' });
-  const months = config.CYCLE_MONTHS[row.cycle] || 12;
-  // 若已过期多个周期，推进到第一个不早于今天的到期日
-  let next = addMonths(row.expiry_date, months);
+  const unitMonths = config.CYCLE_MONTHS[row.cycle] || config.CYCLE_MONTHS.year;
+  const months = (row.duration != null ? Number(row.duration) : 1) * unitMonths;
+  const currentExpiry = subscriptionExpiry(row); // 当前到期日（新数据按购买日+时长算出，旧数据用已存值）
+  let next = addMonths(currentExpiry, months);    // 续费：在当前到期日基础上再延长一个时长
   const today = todayShanghai();
   let guard = 0;
-  while (next < today && guard < 240) {
+  while (next < today && guard < 240) {           // 已过期多个周期时，推进到第一个不早于今天的到期日
     next = addMonths(next, months);
     guard += 1;
   }
-  db.prepare("UPDATE subscriptions SET expiry_date = ?, updated_at = datetime('now') WHERE id = ?")
-    .run(next, req.params.id);
+  // 有购买日的记录：购买日同步更新为"新到期日 - 一个时长"，保持 purchase_date + duration = expiry_date 可推导
+  const nextPurchase = row.purchase_date ? addMonths(next, -months) : row.purchase_date;
+  db.prepare("UPDATE subscriptions SET purchase_date = ?, expiry_date = ?, updated_at = datetime('now') WHERE id = ?")
+    .run(nextPurchase, next, req.params.id);
   res.json(db.prepare('SELECT * FROM subscriptions WHERE id = ?').get(req.params.id));
 });
 
@@ -122,9 +135,9 @@ app.use('/api/items', makeCrud(db, 'items', [
   'serial', 'warranty_months', 'receipt_path', 'note',
 ]));
 app.use('/api/subscriptions', makeCrud(db, 'subscriptions', [
-  'name', 'account', 'expiry_date', 'cycle', 'cost', 'payment_method',
+  'name', 'account', 'purchase_date', 'duration', 'expiry_date', 'cycle', 'cost', 'payment_method',
   'remind_days', 'note',
-]));
+], fillSubscriptionExpiry));
 
 // 生产环境托管前端构建产物
 const webDist = path.resolve(__dirname, '../../web/dist');

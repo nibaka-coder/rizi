@@ -7,8 +7,10 @@ const express = require('express');
  * @param {object} db better-sqlite3 实例
  * @param {string} table 表名（内部白名单，来自代码，非用户输入）
  * @param {string[]} fields 允许写入的字段白名单
+ * @param {Function} [transform] 可选的写入前钩子 (body, req) => body，用于派生字段计算
  */
-function makeCrud(db, table, fields) {
+function makeCrud(db, table, fields, transform) {
+  const apply = (body, req) => (transform ? transform(body, req) : body);
   const router = express.Router();
 
   router.get('/', (req, res) => {
@@ -23,7 +25,7 @@ function makeCrud(db, table, fields) {
   });
 
   router.post('/', (req, res) => {
-    const body = pick(req.body, fields);
+    const body = apply(pick(req.body, fields), req);
     const cols = Object.keys(body);
     if (!cols.length) return res.status(400).json({ error: '请求体为空' });
     const placeholders = cols.map(() => '?').join(',');
@@ -35,7 +37,7 @@ function makeCrud(db, table, fields) {
   });
 
   router.put('/:id', (req, res) => {
-    const body = pick(req.body, fields);
+    const body = apply(pick(req.body, fields), req);
     const cols = Object.keys(body);
     if (!cols.length) return res.status(400).json({ error: '请求体为空' });
     const sets = cols.map((c) => `${c} = ?`).join(', ');

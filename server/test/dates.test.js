@@ -69,11 +69,34 @@ test('computeItem 保修到期 = 购买日 + N 月', () => {
   assert.match(it.warrantyText, /已过/);
 });
 
-test('computeSubscription 过期显示已过期天数', () => {
+test('computeSubscription 过期显示已过期天数（旧数据只有到期日）', () => {
   const s = d.computeSubscription({ expiry_date: '2026-11-10', cycle: 'year' }, '2026-11-17');
   assert.equal(s.days, -7);
   assert.equal(s.expired, true);
   assert.match(s.countdown, /已过期 7 天/);
+});
+
+test('subscriptionExpiry 购买日+时长：1 年', () => {
+  const s = { purchase_date: '2025-11-23', duration: 1, cycle: 'year' };
+  assert.equal(d.subscriptionExpiry(s), '2026-11-23');
+});
+
+test('subscriptionExpiry 购买日+时长：2 个月', () => {
+  const s = { purchase_date: '2026-11-23', duration: 2, cycle: 'month' };
+  assert.equal(d.subscriptionExpiry(s), '2027-01-23');
+});
+
+test('subscriptionExpiry 购买日+时长月末收敛：1/31 + 1 月', () => {
+  const s = { purchase_date: '2026-01-31', duration: 1, cycle: 'month' };
+  assert.equal(d.subscriptionExpiry(s), '2026-02-28');
+});
+
+test('computeSubscription 优先用购买日+时长算出到期日，忽略传入的旧到期日', () => {
+  const s = d.computeSubscription({
+    purchase_date: '2025-11-23', duration: 1, cycle: 'year', expiry_date: '2000-01-01',
+  }, '2026-11-17');
+  assert.equal(s.expiry_date, '2026-11-23');
+  assert.equal(s.days, 6);
 });
 
 test('buildOverview 分组筛选：30 天内、会员过期也纳入、已过保物品排除', () => {

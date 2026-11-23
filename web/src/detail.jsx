@@ -41,12 +41,15 @@ export function DetailDrawer({ type, data, onClose, onEdit, onDelete, onRenew })
     </>;
   } else if (type === 'sub') {
     title = data.name;
-    const cycleText = { month: '每月', quarter: '每季', year: '每年' };
+    const unitText = { month: '个月', quarter: '个季度', year: '年' };
     body = <>
       <Row k="名称" v={data.name} />
       <Row k="账号归属" v={data.account} />
+      <Row k="购买日期" v={data.purchase_date || '未记录'} />
+      {data.purchase_date != null && data.duration != null && (
+        <Row k="购买时长" v={`${data.duration} ${unitText[data.cycle] || '年'}`} />
+      )}
       <Row k="到期日" v={data.expiry_date} />
-      <Row k="周期" v={cycleText[data.cycle]} />
       <Row k="费用" v={data.cost != null ? `¥${data.cost}` : null} />
       <Row k="支付方式" v={data.payment_method} />
       <Row k="状态" v={data.countdown} />

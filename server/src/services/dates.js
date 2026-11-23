@@ -3,7 +3,7 @@
 // 所有"今天"按 Asia/Shanghai 计算，统一口径，避免跨零点差一天。
 const TZ = 'Asia/Shanghai';
 const { Solar, Lunar } = require('lunar-javascript');
-const { UPCOMING_DAYS } = require('../config');
+const { UPCOMING_DAYS, CYCLE_MONTHS } = require('../config');
 
 const MS_PER_DAY = 86400000;
 
@@ -162,11 +162,25 @@ function computeItem(it, today) {
   };
 }
 
+/**
+ * 会员到期日：优先用「购买日 + 时长 × 周期」算出，兼容只有 expiry_date 的旧数据。
+ * 时长 duration 单位为周期个数：cycle=year 且 duration=1 表示 1 年；quarter=1 表示 1 季。
+ */
+function subscriptionExpiry(s) {
+  if (s.purchase_date && s.duration != null) {
+    const unitMonths = CYCLE_MONTHS[s.cycle] || CYCLE_MONTHS.year;
+    return addMonths(s.purchase_date, Number(s.duration) * unitMonths);
+  }
+  return s.expiry_date; // 旧数据：没有购买日/时长时沿用已存到期日
+}
+
 /** 会员：到期倒计时；过期持续为正数天数提示直到处理 */
 function computeSubscription(s, today) {
-  const days = diffDays(s.expiry_date, today);
+  const expiry = subscriptionExpiry(s);
+  const days = diffDays(expiry, today);
   return {
     ...s,
+    expiry_date: expiry,
     days,
     expired: days < 0,
     countdown: days < 0 ? `已过期 ${-days} 天` : (days === 0 ? '今天到期' : `${days} 天`),
@@ -203,6 +217,7 @@ module.exports = {
   lunarLabel,
   usedDuration,
   remainingLabel,
+  subscriptionExpiry,
   computePerson,
   computeItem,
   computeSubscription,

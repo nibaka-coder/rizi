@@ -2,6 +2,7 @@ import React from 'react';
 import { CountBadge, Avatar, Empty } from './components';
 
 const cycleText = { month: '每月', quarter: '每季', year: '每年' };
+const cycleUnit = { month: '个月', quarter: '个季度', year: '年' };
 
 function StatCards({ groups }) {
   return (
@@ -153,8 +154,8 @@ export function SubsPage({ rows, onOpen }) {
             <button key={s.id} className="row" onClick={() => onOpen('sub', s)}>
               <Avatar emoji="💳" bg="#fff0e8" fg="#d1622b" />
               <div className="row-main">
-                <div className="row-title">{s.name} <span className="tag">{cycleText[s.cycle]}</span></div>
-                <div className="row-sub">{s.expiry_date} 到期{s.cost != null ? ` · ¥${s.cost}` : ''}</div>
+                <div className="row-title">{s.name} <span className="tag">{(s.duration != null && s.purchase_date) ? `${s.duration}${cycleUnit[s.cycle] || '年'}` : cycleText[s.cycle]}</span></div>
+                <div className="row-sub">{s.expiry_date} 到期{s.purchase_date ? ` · 购于 ${s.purchase_date}` : ''}{s.cost != null ? ` · ¥${s.cost}` : ''}</div>
               </div>
               <div className="row-right">
                 <span className={s.expired ? 'count-text danger' : 'count-text'}>{s.countdown}</span>

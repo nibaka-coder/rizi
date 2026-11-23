@@ -50,6 +50,8 @@ db.exec(`
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     name            TEXT NOT NULL,
     account         TEXT DEFAULT '',
+    purchase_date   TEXT,
+    duration        INTEGER,
     expiry_date     TEXT NOT NULL,
     cycle           TEXT NOT NULL DEFAULT 'year' CHECK(cycle IN ('month','quarter','year')),
     cost            REAL,
@@ -60,5 +62,13 @@ db.exec(`
     updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
+
+// 旧库迁移：早期版本只有 expiry_date（购买日+时长是后加的字段）。
+// 用 PRAGMA 检查列是否存在，缺列则补，保证已部署的库升级不丢数据。
+{
+  const cols = db.prepare('PRAGMA table_info(subscriptions)').all().map((c) => c.name);
+  if (!cols.includes('purchase_date')) db.exec('ALTER TABLE subscriptions ADD COLUMN purchase_date TEXT');
+  if (!cols.includes('duration')) db.exec('ALTER TABLE subscriptions ADD COLUMN duration INTEGER');
+}
 
 module.exports = db;

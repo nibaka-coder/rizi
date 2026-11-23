@@ -51,7 +51,7 @@ function importData(payload, mode = 'merge') {
       'is_leap_month', 'remind_days', 'note', 'created_at', 'updated_at'],
     items: ['id', 'name', 'category', 'location', 'purchase_date', 'price', 'brand', 'model',
       'serial', 'warranty_months', 'receipt_path', 'note', 'created_at', 'updated_at'],
-    subscriptions: ['id', 'name', 'account', 'expiry_date', 'cycle', 'cost', 'payment_method',
+    subscriptions: ['id', 'name', 'account', 'purchase_date', 'duration', 'expiry_date', 'cycle', 'cost', 'payment_method',
       'remind_days', 'note', 'created_at', 'updated_at'],
   };
 

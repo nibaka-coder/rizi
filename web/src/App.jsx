@@ -31,6 +31,7 @@ export default function App() {
   const [form, setForm] = useState(null); // {type, initial}
   const [toast, setToast] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [addMenu, setAddMenu] = useState(false); // 首页新增类型选择菜单
 
   const notify = (msg) => {
     setToast(msg);
@@ -68,8 +69,14 @@ export default function App() {
 
   useEffect(() => { load(); }, [load]);
 
-  const openForm = (type, initial = null) => { setDetail(null); setForm({ type, initial }); };
-  const closeAll = () => { setForm(null); setDetail(null); };
+  const openForm = (type, initial = null) => { setDetail(null); setAddMenu(false); setForm({ type, initial }); };
+  const closeAll = () => { setForm(null); setDetail(null); setAddMenu(false); };
+
+  // 首页新增：弹类型选择菜单；分类页直接打开对应表单
+  const handleAdd = () => {
+    if (tab === 'overview') { setAddMenu((v) => !v); return; }
+    openForm(tab === 'people' ? 'person' : tab === 'items' ? 'item' : 'sub');
+  };
 
   const saveForm = async (data) => {
     try {
@@ -128,9 +135,16 @@ export default function App() {
           <div className="topbar-title">{config?.appName || '日子'}</div>
           <div className="topbar-actions">
             <button className="icon-btn top-setting" onClick={() => setSettingsOpen(true)} title="数据与备份" aria-label="数据与备份">⚙</button>
-            <button className="btn primary add-btn" onClick={() => openForm(
-              tab === 'people' ? 'person' : tab === 'items' ? 'item' : tab === 'subs' ? 'sub' : 'sub'
-            )}>＋ 新增</button>
+            <div className="add-wrap">
+              <button className="btn primary add-btn" onClick={handleAdd}>＋ 新增</button>
+              {addMenu && tab === 'overview' && (
+                <div className="add-menu">
+                  <button onClick={() => openForm('person')}><span>♡</span>亲人</button>
+                  <button onClick={() => openForm('item')}><span>▣</span>物品</button>
+                  <button onClick={() => openForm('sub')}><span>💳</span>会员</button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
         <div className="content">
@@ -148,9 +162,15 @@ export default function App() {
           </button>
         ))}
       </nav>
-      <button className="fab" onClick={() => openForm(
-        tab === 'people' ? 'person' : tab === 'items' ? 'item' : 'sub'
-      )}>＋</button>
+      {addMenu && tab === 'overview' && (
+        <div className="fab-menu">
+          <button onClick={() => openForm('person')}><span>♡</span>亲人</button>
+          <button onClick={() => openForm('item')}><span>▣</span>物品</button>
+          <button onClick={() => openForm('sub')}><span>💳</span>会员</button>
+        </div>
+      )}
+      <button className={`fab ${addMenu ? 'fab-open' : ''}`} onClick={handleAdd}>＋</button>
+      {addMenu && <div className="menu-backdrop" onClick={() => setAddMenu(false)} />}
 
       {detail && (
         <DetailDrawer type={detail.type} data={detail.data}
