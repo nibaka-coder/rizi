@@ -1,8 +1,11 @@
 // 统一的 API 请求封装
 async function request(path, opts = {}) {
+  const { refresh, ...rest } = opts;
+  const headers = { 'Content-Type': 'application/json' };
+  if (refresh) headers['X-Rizi-Refresh'] = '1';
   const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
-    ...opts,
+    headers,
+    ...rest,
   });
   if (!res.ok) {
     let msg = `请求失败 (${res.status})`;
@@ -17,22 +20,22 @@ async function request(path, opts = {}) {
 }
 
 export const api = {
-  config: () => request('/api/config'),
-  overview: () => request('/api/overview'),
+  config: (refresh) => request('/api/config', refresh ? { refresh: true } : {}),
+  overview: (refresh) => request('/api/overview', refresh ? { refresh: true } : {}),
   people: {
-    list: () => request('/api/people/view'),
+    list: (refresh) => request('/api/people/view', refresh ? { refresh: true } : {}),
     create: (data) => request('/api/people', { method: 'POST', body: JSON.stringify(data) }),
     update: (id, data) => request(`/api/people/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     remove: (id) => request(`/api/people/${id}`, { method: 'DELETE' }),
   },
   items: {
-    list: () => request('/api/items/view'),
+    list: (refresh) => request('/api/items/view', refresh ? { refresh: true } : {}),
     create: (data) => request('/api/items', { method: 'POST', body: JSON.stringify(data) }),
     update: (id, data) => request(`/api/items/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     remove: (id) => request(`/api/items/${id}`, { method: 'DELETE' }),
   },
   subs: {
-    list: () => request('/api/subscriptions/view'),
+    list: (refresh) => request('/api/subscriptions/view', refresh ? { refresh: true } : {}),
     create: (data) => request('/api/subscriptions', { method: 'POST', body: JSON.stringify(data) }),
     update: (id, data) => request(`/api/subscriptions/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     remove: (id) => request(`/api/subscriptions/${id}`, { method: 'DELETE' }),

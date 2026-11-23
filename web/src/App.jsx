@@ -51,10 +51,11 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (refresh = false) => {
     try {
       const [cfg, ov, p, i, s] = await Promise.all([
-        api.config(), api.overview(), api.people.list(), api.items.list(), api.subs.list(),
+        api.config(refresh), api.overview(refresh), api.people.list(refresh),
+        api.items.list(refresh), api.subs.list(refresh),
       ]);
       setConfig(cfg);
       setOverview(ov);
@@ -85,7 +86,7 @@ export default function App() {
       if (form.initial) await coll.update(form.initial.id, data);
       else await coll.create(data);
       closeAll();
-      await load();
+      await load(true);
       notify('已保存');
     } catch (e) { notify(`保存失败：${e.message}`); }
   };
@@ -95,7 +96,7 @@ export default function App() {
     try {
       await api[COLLECTION[type]].remove(data.id);
       closeAll();
-      await load();
+      await load(true);
       notify('已删除');
     } catch (e) { notify(`删除失败：${e.message}`); }
   };
@@ -104,7 +105,7 @@ export default function App() {
     try {
       const updated = await api.subs.renew(data.id);
       closeAll();
-      await load();
+      await load(true);
       notify(`已续费，新到期日 ${updated.expiry_date}`);
     } catch (e) { notify(`操作失败：${e.message}`); }
   };
@@ -126,7 +127,6 @@ export default function App() {
           <button className="sidebar-setting" onClick={() => setSettingsOpen(true)}>
             <span className="nav-icon">⚙</span><span>数据与备份</span>
           </button>
-          <div className="foot-note">单用户 · 自托管</div>
         </div>
       </aside>
 
@@ -186,7 +186,7 @@ export default function App() {
         </>
       )}
       {settingsOpen && (
-        <SettingsModal onClose={() => setSettingsOpen(false)} onImported={load} notify={notify} />
+        <SettingsModal onClose={() => setSettingsOpen(false)} onImported={() => load(true)} notify={notify} />
       )}
       {toast && <div className="toast">{toast}</div>}
     </div>

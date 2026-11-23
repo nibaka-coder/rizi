@@ -23,7 +23,7 @@ export function OverviewPage({ data, config, onOpen }) {
       <div className="page-head">
         <div>
           <h1>近期提醒</h1>
-          <p className="sub">未来 {windowDays} 天内需要你行动的事 · 今天 {today}</p>
+          <p className="sub">今天 {today}</p>
         </div>
       </div>
       <StatCards groups={groups} />
@@ -90,7 +90,7 @@ export function PeoplePage({ rows, onOpen }) {
   if (!rows) return <div className="loading">加载中…</div>;
   return (
     <div className="page">
-      <div className="page-head"><div><h1>亲人</h1><p className="sub">生日与称呼，农历也记得住</p></div></div>
+      <div className="page-head"><div><h1>亲人</h1></div></div>
       {rows.length === 0 ? <Empty text="还没有记录，点右上角新增" /> : (
         <div className="list card-list">
           {rows.map((p) => (
@@ -120,7 +120,7 @@ export function ItemsPage({ rows, onOpen }) {
   if (!rows) return <div className="loading">加载中…</div>;
   return (
     <div className="page">
-      <div className="page-head"><div><h1>物品</h1><p className="sub">买了什么、用了多久、保修到几时</p></div></div>
+      <div className="page-head"><div><h1>物品</h1></div></div>
       {rows.length === 0 ? <Empty text="还没有记录，点右上角新增" /> : (
         <div className="list card-list">
           {rows.map((it) => (
@@ -147,7 +147,7 @@ export function SubsPage({ rows, onOpen }) {
   if (!rows) return <div className="loading">加载中…</div>;
   return (
     <div className="page">
-      <div className="page-head"><div><h1>会员</h1><p className="sub">到期与续费，别被自动扣款</p></div></div>
+      <div className="page-head"><div><h1>会员</h1></div></div>
       {rows.length === 0 ? <Empty text="还没有记录，点右上角新增" /> : (
         <div className="list card-list">
           {rows.map((s) => (

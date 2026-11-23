@@ -82,7 +82,7 @@ export function SettingsModal({ onClose, onImported, notify }) {
             <input ref={fileRef} type="file" accept=".json,application/json" onChange={onPickFile} />
           </Field>
           {fileName && <p className="setting-file">已选择：{fileName} {payload ? '✓ 校验通过' : '✗ 格式错误'}</p>}
-          <Field label="导入方式" hint="不确定就用合并">
+          <Field label="导入方式">
             <select value={mode} onChange={(e) => setMode(e.target.value)}>
               <option value="merge">合并（保留现有数据，只补进新记录）</option>
               <option value="replace">覆盖（清空现有数据后完整恢复）</option>

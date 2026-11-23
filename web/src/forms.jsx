@@ -72,17 +72,17 @@ export function PersonForm({ initial, config, onSave, onClose }) {
           </div>
         </Field>
         <div className="form-row">
-          <Field label="出生年份" hint="不知道可留空"><input type="number" value={f.birth_year || ''} onChange={set('birth_year')} placeholder="1985" /></Field>
+          <Field label="出生年份"><input type="number" value={f.birth_year || ''} onChange={set('birth_year')} placeholder="1985" /></Field>
           <Field label="出生月"><input type="number" min="1" max="12" value={f.birth_month} onChange={set('birth_month')} placeholder="11" required /></Field>
           <Field label="出生日"><input type="number" min="1" max="31" value={f.birth_day} onChange={set('birth_day')} placeholder="20" required /></Field>
         </div>
         {f.calendar === 'lunar' && (
           <label className="check">
             <input type="checkbox" checked={!!Number(f.is_leap_month)} onChange={(e) => setF({ ...f, is_leap_month: e.target.checked ? 1 : 0 })} />
-            农历闰月出生（暂按同名平月处理）
+            农历闰月出生
           </label>
         )}
-        <Field label="提前提醒" hint="天"><input type="number" min="0" value={f.remind_days} onChange={set('remind_days')} /></Field>
+        <Field label="提前提醒（天）"><input type="number" min="0" value={f.remind_days} onChange={set('remind_days')} /></Field>
         <Field label="备注"><textarea value={f.note} onChange={set('note')} placeholder="礼物想法、喜好…" rows="2" /></Field>
         <div className="form-actions">
           <button type="button" className="btn ghost" onClick={onClose}>取消</button>
@@ -127,15 +127,15 @@ export function ItemForm({ initial, config, onSave, onClose }) {
         </div>
         <div className="form-row">
           <Field label="购买日期"><input type="date" value={f.purchase_date} onChange={set('purchase_date')} required /></Field>
-          <Field label="价格" hint="元"><input type="number" step="0.01" value={f.price || ''} onChange={set('price')} placeholder="8999" /></Field>
-          <Field label="保修月数" hint="可空"><input type="number" min="0" value={f.warranty_months || ''} onChange={set('warranty_months')} placeholder="12" /></Field>
+          <Field label="价格（元）"><input type="number" step="0.01" value={f.price || ''} onChange={set('price')} placeholder="8999" /></Field>
+          <Field label="保修月数"><input type="number" min="0" value={f.warranty_months || ''} onChange={set('warranty_months')} placeholder="12" /></Field>
         </div>
         <div className="form-row">
           <Field label="品牌"><input value={f.brand} onChange={set('brand')} placeholder="索尼" /></Field>
           <Field label="型号"><input value={f.model} onChange={set('model')} /></Field>
           <Field label="序列号"><input value={f.serial} onChange={set('serial')} /></Field>
         </div>
-        <Field label="发票照片路径" hint="本地路径，二期做上传"><input value={f.receipt_path} onChange={set('receipt_path')} placeholder="/path/to/receipt.jpg" /></Field>
+        <Field label="发票照片路径"><input value={f.receipt_path} onChange={set('receipt_path')} placeholder="/path/to/receipt.jpg" /></Field>
         <Field label="备注"><textarea value={f.note} onChange={set('note')} rows="2" /></Field>
         <div className="form-actions">
           <button type="button" className="btn ghost" onClick={onClose}>取消</button>
@@ -175,7 +175,7 @@ export function SubForm({ initial, config, onSave, onClose }) {
           <Field label="购买日期"><input type="date" value={f.purchase_date || ''} onChange={set('purchase_date')} required /></Field>
         </div>
         <div className="form-row">
-          <Field label="时长" hint="数字"><input type="number" min="1" value={f.duration} onChange={set('duration')} required /></Field>
+          <Field label="时长"><input type="number" min="1" value={f.duration} onChange={set('duration')} required /></Field>
           <Field label="单位">
             <select value={f.cycle} onChange={set('cycle')}>
               <option value="month">个月</option>
@@ -188,9 +188,8 @@ export function SubForm({ initial, config, onSave, onClose }) {
         </div>
         <div className="expiry-preview">
           到期日期（自动计算）：<strong>{previewExpiry || '请先填购买日期和时长'}</strong>
-          <span className="expiry-hint">到期日无需填写，由购买日期 + 时长自动算出</span>
         </div>
-        <Field label="提前提醒" hint="天"><input type="number" min="0" value={f.remind_days} onChange={set('remind_days')} /></Field>
+        <Field label="提前提醒（天）"><input type="number" min="0" value={f.remind_days} onChange={set('remind_days')} /></Field>
         <Field label="备注"><textarea value={f.note} onChange={set('note')} rows="2" /></Field>
         <div className="form-actions">
           <button type="button" className="btn ghost" onClick={onClose}>取消</button>
