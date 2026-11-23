@@ -1,0 +1,9 @@
+# 统一换行符：文本文件和脚本在 Windows 提交、Linux 构建时都用 LF
+* text=auto eol=lf
+
+# 二进制文件不做换行符转换
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

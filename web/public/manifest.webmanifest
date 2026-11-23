@@ -1,0 +1,18 @@
+{
+  "name": "日子 - 家庭时间事件管理器",
+  "short_name": "日子",
+  "description": "亲人、物品、会员，一个都不能忘。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f7fb",
+  "theme_color": "#5b4bd6",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

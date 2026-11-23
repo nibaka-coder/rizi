@@ -1,0 +1,23 @@
+services:
+  rizi:
+    build: .
+    container_name: rizi
+    restart: unless-stopped
+    ports:
+      # 只监听本机，外部无法直接访问 IP:3000，必须走宝塔反代的域名+HTTPS（更安全）
+      # 若临时需要用 IP:3000 直连调试，可改成 "3000:3000" 并 docker compose up -d
+      - "127.0.0.1:3000:3000"
+    volumes:
+      # SQLite 数据持久化到宿主机 ./data 目录，容器重建不丢数据
+      - ./data:/app/server/data
+    environment:
+      TZ: Asia/Shanghai
+      # 应用名：想改名改这里，重启容器即可（前端标题、侧边栏同步）
+      APP_NAME: 日子
+      # 近期提醒窗口天数
+      UPCOMING_DAYS: 30
+      # 自动备份：每天在 BACKUP_HOUR 之后检查并生成当日快照，保留最近 BACKUP_KEEP 份
+      BACKUP_DIR: /app/server/data/backups
+      BACKUP_KEEP: 7
+      BACKUP_HOUR: 3
+      BACKUP_ON_START: "true"

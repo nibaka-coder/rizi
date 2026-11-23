@@ -1,0 +1,25 @@
+# 依赖：镜像内会重新安装（本地 node_modules 含 Windows 原生模块，带进去会在 Linux 崩溃）
+node_modules/
+**/node_modules/
+
+# 构建产物：镜像内会重新构建
+dist/
+**/dist/
+
+# 本地数据库与备份：绝不能进镜像（否则部署后是本地测试数据，甚至泄露）
+data/
+server/data/
+*.db
+*.db-shm
+*.db-wal
+
+# 版本控制与文档类
+.git/
+.gitignore
+*.md
+效果图/
+
+# 其他
+*.log
+.DS_Store
+.env
