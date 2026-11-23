@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { api } from './api';
+import { api, setUnauthorizedHandler } from './api';
 import { OverviewPage, PeoplePage, ItemsPage, SubsPage } from './pages';
 import { PersonForm, ItemForm, SubForm } from './forms';
 import { DetailDrawer } from './detail';
 import { SettingsModal } from './settings';
+import { AuthGate } from './auth';
 
 const NAV = [
   { key: 'overview', label: '近期', icon: '⌂' },
@@ -21,6 +22,9 @@ function tabFromHash() {
 }
 
 export default function App() {
+  const [authState, setAuthState] = useState('checking'); // checking | gate | ready
+  const [gateMode, setGateMode] = useState('login');       // login | setup
+  const [needsSetupKey, setNeedsSetupKey] = useState(false);
   const [config, setConfig] = useState(null);
   const [tab, setTab] = useState(tabFromHash);
   const [overview, setOverview] = useState(null);
@@ -36,6 +40,51 @@ export default function App() {
   const notify = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
+  };
+
+  // 检查认证状态：没设密码→设置页；没登录→登录页；否则进入应用
+  const checkAuth = useCallback(async () => {
+    try {
+      const s = await api.auth.status();
+      if (!s.hasPassword) {
+        setGateMode('setup');
+        setNeedsSetupKey(!!s.needsSetupKey);
+        setAuthState('gate');
+      } else if (!s.loggedIn) {
+        setGateMode('login');
+        setAuthState('gate');
+      } else {
+        setAuthState('ready');
+      }
+    } catch (_) {
+      // 网络异常时先按未登录处理，让页面显示登录入口而非白屏
+      setGateMode('login');
+      setAuthState('gate');
+    }
+  }, []);
+
+  useEffect(() => { checkAuth(); }, [checkAuth]);
+
+  // 任何接口返回 401（会话过期）就切回登录页
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_DATA' });
+      }
+      setGateMode('login');
+      setAuthState('gate');
+      setSettingsOpen(false);
+      setDetail(null);
+      setForm(null);
+      setOverview(null); setPeople(null); setItems(null); setSubs(null);
+    });
+    return () => setUnauthorizedHandler(null);
+  }, []);
+
+  const onAuthSuccess = () => {
+    setAuthState('ready');
+    // 认证通过后再加载数据
+    load(true);
   };
 
   // 切换页面时同步 URL hash
@@ -68,7 +117,8 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  // 已登录时加载数据（认证通过的场景由 onAuthSuccess 主动触发）
+  useEffect(() => { if (authState === 'ready') load(); }, [authState, load]);
 
   const openForm = (type, initial = null) => { setDetail(null); setAddMenu(false); setForm({ type, initial }); };
   const closeAll = () => { setForm(null); setDetail(null); setAddMenu(false); };
@@ -111,6 +161,15 @@ export default function App() {
   };
 
   const pageProps = { onOpen: (type, data) => setDetail({ type, data }) };
+
+  // 认证检查中 / 需要登录或设置密码
+  if (authState === 'checking') {
+    return <div className="auth-loading">加载中…</div>;
+  }
+  if (authState === 'gate') {
+    return <AuthGate mode={gateMode} needsSetupKey={needsSetupKey}
+      appName={config?.appName} onSuccess={onAuthSuccess} />;
+  }
 
   return (
     <div className="app">
@@ -186,7 +245,18 @@ export default function App() {
         </>
       )}
       {settingsOpen && (
-        <SettingsModal onClose={() => setSettingsOpen(false)} onImported={() => load(true)} notify={notify} />
+        <SettingsModal onClose={() => setSettingsOpen(false)} onImported={() => load(true)} notify={notify}
+          onLogout={async () => {
+            try { await api.auth.logout(); } catch (_) {}
+            // 清空 Service Worker 里的数据缓存，杜绝登出后从缓存看到旧数据
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+              navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_DATA' });
+            }
+            setSettingsOpen(false);
+            setGateMode('login');
+            setAuthState('gate');
+            setOverview(null); setPeople(null); setItems(null); setSubs(null);
+          }} />
       )}
       {toast && <div className="toast">{toast}</div>}
     </div>

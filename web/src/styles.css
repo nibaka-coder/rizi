@@ -1,6 +1,6 @@
 :root {
-  --purple: #5b4bd6;
-  --purple-soft: #efecff;
+  --purple: #7c5cf0;
+  --purple-soft: #f0ebff;
   --blue: #3b6fd4;
   --orange: #d1622b;
   --red: #d64545;
@@ -293,3 +293,49 @@ input, select, textarea { font-family: inherit; }
   }
   .menu-backdrop { z-index: 20; }
 }
+
+/* ---------- 认证：加载 / 登录 / 设置密码 ---------- */
+.auth-loading {
+  height: 100%; display: grid; place-items: center;
+  color: var(--muted); font-size: 15px;
+}
+.auth-gate {
+  min-height: 100%; display: grid; place-items: center; padding: 24px;
+  background: linear-gradient(135deg, #a06bf0 0%, #5aa0f5 100%);
+}
+.auth-card {
+  width: 100%; max-width: 380px; background: #fff; border-radius: 20px;
+  padding: 32px 28px 28px; box-shadow: 0 12px 40px rgba(40, 20, 90, 0.18);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.auth-brand { display: flex; justify-content: center; margin-bottom: 2px; }
+.auth-brand .brand-mark {
+  width: 56px; height: 56px; border-radius: 16px; font-size: 28px;
+  background: linear-gradient(135deg, #a06bf0, #5aa0f5);
+}
+.auth-card h1 { margin: 0; text-align: center; font-size: 22px; }
+.auth-title { margin: 0; text-align: center; font-size: 16px; font-weight: 600; color: #444; }
+.auth-desc { margin: 0 0 6px; text-align: center; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+.auth-card .field { display: flex; flex-direction: column; gap: 6px; }
+.auth-card input {
+  width: 100%; padding: 11px 12px; border: 1px solid #dcdce6; border-radius: 10px;
+  font-size: 15px; outline: none;
+}
+.auth-card input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-soft); }
+.auth-error {
+  margin: 0; padding: 9px 12px; background: #fff0f0; color: var(--red);
+  border-radius: 8px; font-size: 13px;
+}
+.auth-submit { width: 100%; padding: 12px; font-size: 15px; margin-top: 4px; }
+
+/* 设置弹窗里的修改密码 / 退出登录 */
+.change-pw-toggle { margin-bottom: 12px; }
+.change-pw-toggle summary { cursor: pointer; font-size: 14px; color: var(--purple); font-weight: 600; }
+.change-pw-form { display: flex; flex-direction: column; gap: 12px; padding: 14px 2px 4px; }
+.change-pw-form .field { display: flex; flex-direction: column; gap: 6px; }
+.change-pw-form input {
+  width: 100%; padding: 10px 12px; border: 1px solid #dcdce6; border-radius: 10px;
+  font-size: 14px; outline: none;
+}
+.change-pw-form input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-soft); }
+.logout-btn { color: var(--red); }

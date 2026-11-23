@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from './api';
 import { Modal, Field } from './components';
+import { ChangePasswordForm } from './auth';
 
 function fmtSize(n) {
   if (n == null) return '-';
@@ -9,7 +10,7 @@ function fmtSize(n) {
   return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }
 
-export function SettingsModal({ onClose, onImported, notify }) {
+export function SettingsModal({ onClose, onImported, notify, onLogout }) {
   const [status, setStatus] = useState(null);
   const [mode, setMode] = useState('merge');
   const [payload, setPayload] = useState(null);
@@ -110,6 +111,17 @@ export function SettingsModal({ onClose, onImported, notify }) {
             ))}
           </div>
         </section>
+
+        {onLogout && (
+          <section className="setting-sec">
+            <h4>安全</h4>
+            <details className="change-pw-toggle">
+              <summary>修改密码</summary>
+              <ChangePasswordForm notify={notify} />
+            </details>
+            <button className="btn ghost logout-btn" onClick={onLogout}>退出登录</button>
+          </section>
+        )}
       </div>
     </Modal>
   );

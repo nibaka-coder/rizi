@@ -21,3 +21,13 @@ services:
       BACKUP_KEEP: 7
       BACKUP_HOUR: 3
       BACKUP_ON_START: "true"
+      # ---------- 访问认证 ----------
+      # 首次打开应用时自己设置登录密码。
+      # SETUP_KEY：可选。设置后，首次设置密码必须同时输入这个密钥，防止别人抢先设置密码把你锁在外面。
+      # 建议设一个只有你知道的字符串；留空则任何人首次打开都能设置密码（适合只有你知道域名的场景）。
+      # 注意：设置后请牢记，首次设置密码时要用。之后登录用你自己设的密码，与此无关。
+      SETUP_KEY: ""
+      # 会话有效期（天），到期后需重新登录
+      SESSION_DAYS: "30"
+      # Cookie 安全标志，走 HTTPS 保持 true；本地 HTTP 调试才改成 "false"
+      COOKIE_SECURE: "true"

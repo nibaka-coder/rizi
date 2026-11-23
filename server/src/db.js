@@ -61,6 +61,21 @@ db.exec(`
     created_at      TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  -- 认证：单行配置（密码哈希）+ 会话表
+  CREATE TABLE IF NOT EXISTS auth (
+    id            INTEGER PRIMARY KEY CHECK (id = 1),
+    salt          TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at    TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS sessions (
+    token       TEXT PRIMARY KEY,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    expires_at  TEXT NOT NULL
+  );
 `);
 
 // 旧库迁移：早期版本只有 expiry_date（购买日+时长是后加的字段）。

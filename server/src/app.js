@@ -6,6 +6,7 @@ const db = require('./db');
 const config = require('./config');
 const { makeCrud } = require('./routes/crud');
 const backup = require('./services/backup');
+const auth = require('./services/auth');
 const {
   todayShanghai,
   computePerson,
@@ -27,6 +28,69 @@ function fillSubscriptionExpiry(body) {
 
 const app = express();
 app.use(express.json());
+
+// ---------- 认证（这些接口本身不需要登录） ----------
+
+// 查询认证状态：前端据此决定显示"设置密码 / 登录 / 正常应用"
+app.get('/api/auth/status', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({
+    hasPassword: auth.hasPassword(),
+    loggedIn: auth.isValidSession(auth.readToken(req)),
+    needsSetupKey: !!config.SETUP_KEY,
+  });
+});
+
+// 首次设置密码（仅当尚未设置过时可用）
+app.post('/api/auth/setup', (req, res) => {
+  if (auth.hasPassword()) return res.status(409).json({ error: '密码已设置' });
+  const password = String(req.body?.password || '');
+  if (password.length < 6) return res.status(400).json({ error: '密码至少 6 位' });
+  if (config.SETUP_KEY && String(req.body?.setupKey || '') !== config.SETUP_KEY) {
+    return res.status(403).json({ error: '初始化密钥错误' });
+  }
+  auth.setPassword(password);
+  auth.deleteAllSessions();
+  const token = auth.createSession();
+  res.cookie(auth.COOKIE_NAME, token, auth.cookieOptions());
+  res.json({ ok: true });
+});
+
+// 登录
+app.post('/api/auth/login', (req, res) => {
+  if (!auth.hasPassword()) return res.status(409).json({ error: '尚未设置密码' });
+  const password = String(req.body?.password || '');
+  if (!auth.verifyPassword(password)) return res.status(401).json({ error: '密码错误' });
+  const token = auth.createSession();
+  res.cookie(auth.COOKIE_NAME, token, auth.cookieOptions());
+  res.json({ ok: true });
+});
+
+// 退出登录
+app.post('/api/auth/logout', (req, res) => {
+  auth.deleteSession(auth.readToken(req));
+  res.clearCookie(auth.COOKIE_NAME, { path: '/' });
+  res.json({ ok: true });
+});
+
+// 修改密码（需已登录）
+app.post('/api/auth/change-password', auth.requireAuth, (req, res) => {
+  const oldPassword = String(req.body?.oldPassword || '');
+  const newPassword = String(req.body?.newPassword || '');
+  if (!auth.verifyPassword(oldPassword)) return res.status(401).json({ error: '原密码错误' });
+  if (newPassword.length < 6) return res.status(400).json({ error: '新密码至少 6 位' });
+  auth.setPassword(newPassword);
+  auth.deleteAllSessions();
+  const token = auth.createSession();
+  res.cookie(auth.COOKIE_NAME, token, auth.cookieOptions());
+  res.json({ ok: true });
+});
+
+// ---------- 以下所有 /api 接口都需要登录 ----------
+app.use('/api', (req, res, next) => {
+  if (req.path.startsWith('/auth/')) return next(); // 认证接口已自行处理
+  return auth.requireAuth(req, res, next);
+});
 
 // 基础信息（应用名等可配置常量）——前端从这里读取，集中管理
 app.get('/api/config', (req, res) => {

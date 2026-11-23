@@ -21,6 +21,15 @@ const BACKUP_KEEP = Number(process.env.BACKUP_KEEP || 7);       // 保留最近 
 const BACKUP_HOUR = Number(process.env.BACKUP_HOUR || 3);       // 每天几点后执行（0-23）
 const BACKUP_ON_START = process.env.BACKUP_ON_START !== 'false'; // 启动时若当天无备份则补一份
 
+// 访问认证
+// SETUP_KEY：可选。设置后，首次设置密码必须提供此密钥，防止他人抢先设置密码把你锁在外面。
+// 不设置则任何人首次打开都可设置密码——适合只有你知道域名的场景。
+const SETUP_KEY = process.env.SETUP_KEY || '';
+// 会话有效期（天）
+const SESSION_DAYS = Number(process.env.SESSION_DAYS || 30);
+// Cookie 是否强制 Secure（默认开启，仅在 HTTPS 下需要；本地 HTTP 调试可设 false）
+const COOKIE_SECURE = process.env.COOKIE_SECURE !== 'false';
+
 module.exports = {
   APP_NAME,
   UPCOMING_DAYS,
@@ -32,4 +41,7 @@ module.exports = {
   BACKUP_KEEP,
   BACKUP_HOUR,
   BACKUP_ON_START,
+  SETUP_KEY,
+  SESSION_DAYS,
+  COOKIE_SECURE,
 };
