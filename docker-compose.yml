@@ -13,7 +13,7 @@ services:
     environment:
       TZ: Asia/Shanghai
       # 应用名：想改名改这里，重启容器即可（前端标题、侧边栏同步）
-      APP_NAME: 日子
+      APP_NAME: 时间管理局
       # 近期提醒窗口天数
       UPCOMING_DAYS: 30
       # 自动备份：每天在 BACKUP_HOUR 之后检查并生成当日快照，保留最近 BACKUP_KEEP 份

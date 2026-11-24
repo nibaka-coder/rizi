@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal } from './components';
+import { Icon } from './icons';
 
 function Row({ k, v }) {
   return <div className="detail-row"><span className="dk">{k}</span><span className="dv">{v ?? '—'}</span></div>;
@@ -62,7 +63,7 @@ export function DetailDrawer({ type, data, onClose, onEdit, onDelete, onRenew })
     <Modal title={title} onClose={onClose}>
       <div className="detail">{body}</div>
       <div className="detail-actions">
-        {type === 'sub' && <button className="btn success" onClick={() => onRenew(data)}>✓ 标记已续费</button>}
+        {type === 'sub' && <button className="btn success" onClick={() => onRenew(data)}><Icon name="refresh" size={16} /> 标记已续费</button>}
         <button className="btn ghost" onClick={() => onEdit(type, data)}>编辑</button>
         <button className="btn danger-ghost" onClick={() => onDelete(type, data)}>删除</button>
       </div>

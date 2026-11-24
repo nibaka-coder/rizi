@@ -1,6 +1,6 @@
 {
-  "name": "日子 - 家庭时间事件管理器",
-  "short_name": "日子",
+  "name": "时间管理局 - 家庭时间事件管理器",
+  "short_name": "时间管理局",
   "description": "亲人、物品、会员，一个都不能忘。",
   "start_url": "/",
   "display": "standalone",

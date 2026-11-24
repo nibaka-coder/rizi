@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from './api';
 import { Modal, Field } from './components';
 import { ChangePasswordForm } from './auth';
+import { Icon } from './icons';
 
 function fmtSize(n) {
   if (n == null) return '-';
@@ -30,7 +31,7 @@ export function SettingsModal({ onClose, onImported, notify, onLogout }) {
     try {
       const text = await f.text();
       const data = JSON.parse(text);
-      if (data.format !== 'rizi-backup') throw new Error('不是「日子」的备份文件');
+      if (data.format !== 'rizi-backup') throw new Error('不是「时间管理局」的备份文件');
       setPayload(data);
       notify(`已选择备份：${f.name}（${Object.values(data.counts || {}).reduce((a, b) => a + b, 0)} 条记录）`);
     } catch (err) {
@@ -105,7 +106,7 @@ export function SettingsModal({ onClose, onImported, notify, onLogout }) {
             {(status?.backups || []).length === 0 && <p className="setting-hint">还没有快照文件。</p>}
             {status?.backups?.map((b) => (
               <div key={b.file} className="backup-row">
-                <span>📦 {b.file}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Icon name="box" size={16} /> {b.file}</span>
                 <span className="muted">{fmtSize(b.size)}</span>
               </div>
             ))}

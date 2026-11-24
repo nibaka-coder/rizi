@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from './api';
+import { Icon } from './icons';
 
 // 全屏认证页：mode = 'setup'（首次设置密码）| 'login'（登录）
 export function AuthGate({ mode, needsSetupKey, appName, onSuccess }) {
@@ -33,8 +34,8 @@ export function AuthGate({ mode, needsSetupKey, appName, onSuccess }) {
   return (
     <div className="auth-gate">
       <form className="auth-card" onSubmit={submit}>
-        <div className="auth-brand"><span className="brand-mark">日</span></div>
-        <h1>{appName || '日子'}</h1>
+        <div className="auth-brand"><span className="brand-mark"><Icon name="clock" size={34} /></span></div>
+        <h1>{appName || '时间管理局'}</h1>
         <p className="auth-title">{isSetup ? '设置访问密码' : '欢迎回来'}</p>
         <p className="auth-desc">
           {isSetup

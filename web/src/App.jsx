@@ -5,12 +5,13 @@ import { PersonForm, ItemForm, SubForm } from './forms';
 import { DetailDrawer } from './detail';
 import { SettingsModal } from './settings';
 import { AuthGate } from './auth';
+import { Icon } from './icons';
 
 const NAV = [
-  { key: 'overview', label: '近期', icon: '⌂' },
-  { key: 'people', label: '亲人', icon: '♡' },
-  { key: 'items', label: '物品', icon: '▣' },
-  { key: 'subs', label: '会员', icon: '💳' },
+  { key: 'overview', label: '近期', icon: 'home' },
+  { key: 'people', label: '亲人', icon: 'heart' },
+  { key: 'items', label: '物品', icon: 'box' },
+  { key: 'subs', label: '会员', icon: 'card' },
 ];
 
 const COLLECTION = { person: 'people', item: 'items', sub: 'subs' };
@@ -174,33 +175,33 @@ export default function App() {
   return (
     <div className="app">
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark">日</span><span className="brand-name">{config?.appName || '日子'}</span></div>
+        <div className="brand"><span className="brand-mark"><Icon name="clock" size={22} /></span><span className="brand-name">{config?.appName || '时间管理局'}</span></div>
         <nav>
           {NAV.map((n) => (
             <button key={n.key} className={`nav-item ${tab === n.key ? 'active' : ''}`} onClick={() => go(n.key)}>
-              <span className="nav-icon">{n.icon}</span><span>{n.label}</span>
+              <span className="nav-icon"><Icon name={n.icon} size={19} /></span><span>{n.label}</span>
             </button>
           ))}
         </nav>
         <div className="sidebar-foot">
           <button className="sidebar-setting" onClick={() => setSettingsOpen(true)}>
-            <span className="nav-icon">⚙</span><span>数据与备份</span>
+            <span className="nav-icon"><Icon name="gear" size={18} /></span><span>数据与备份</span>
           </button>
         </div>
       </aside>
 
       <main className="main">
         <header className="topbar">
-          <div className="topbar-title">{config?.appName || '日子'}</div>
+          <div className="topbar-title">{config?.appName || '时间管理局'}</div>
           <div className="topbar-actions">
-            <button className="icon-btn top-setting" onClick={() => setSettingsOpen(true)} title="数据与备份" aria-label="数据与备份">⚙</button>
+            <button className="icon-btn top-setting" onClick={() => setSettingsOpen(true)} title="数据与备份" aria-label="数据与备份"><Icon name="gear" size={20} /></button>
             <div className="add-wrap">
-              <button className="btn primary add-btn" onClick={handleAdd}>＋ 新增</button>
+              <button className="btn primary add-btn" onClick={handleAdd}><Icon name="plus" size={17} /> 新增</button>
               {addMenu && tab === 'overview' && (
                 <div className="add-menu">
-                  <button onClick={() => openForm('person')}><span>♡</span>亲人</button>
-                  <button onClick={() => openForm('item')}><span>▣</span>物品</button>
-                  <button onClick={() => openForm('sub')}><span>💳</span>会员</button>
+                  <button onClick={() => openForm('person')}><span><Icon name="heart" size={17} /></span>亲人</button>
+                  <button onClick={() => openForm('item')}><span><Icon name="box" size={17} /></span>物品</button>
+                  <button onClick={() => openForm('sub')}><span><Icon name="card" size={17} /></span>会员</button>
                 </div>
               )}
             </div>
@@ -217,18 +218,18 @@ export default function App() {
       <nav className="bottom-nav">
         {NAV.map((n) => (
           <button key={n.key} className={`tab ${tab === n.key ? 'active' : ''}`} onClick={() => go(n.key)}>
-            <span className="tab-icon">{n.icon}</span><span>{n.label}</span>
+            <span className="tab-icon"><Icon name={n.icon} size={22} /></span><span>{n.label}</span>
           </button>
         ))}
       </nav>
       {addMenu && tab === 'overview' && (
         <div className="fab-menu">
-          <button onClick={() => openForm('person')}><span>♡</span>亲人</button>
-          <button onClick={() => openForm('item')}><span>▣</span>物品</button>
-          <button onClick={() => openForm('sub')}><span>💳</span>会员</button>
+          <button onClick={() => openForm('person')}><span><Icon name="heart" size={17} /></span>亲人</button>
+          <button onClick={() => openForm('item')}><span><Icon name="box" size={17} /></span>物品</button>
+          <button onClick={() => openForm('sub')}><span><Icon name="card" size={17} /></span>会员</button>
         </div>
       )}
-      <button className={`fab ${addMenu ? 'fab-open' : ''}`} onClick={handleAdd}>＋</button>
+      <button className={`fab ${addMenu ? 'fab-open' : ''}`} onClick={handleAdd}><Icon name="plus" size={26} strokeWidth={2.2} /></button>
       {addMenu && <div className="menu-backdrop" onClick={() => setAddMenu(false)} />}
 
       {detail && (

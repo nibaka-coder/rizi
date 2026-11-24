@@ -1,4 +1,4 @@
-# 日子 - 单容器部署：Node 后端托管前端静态产物 + SQLite
+# 时间管理局 - 单容器部署：Node 后端托管前端静态产物 + SQLite
 FROM node:22-bookworm-slim
 
 WORKDIR /app

@@ -1,7 +1,7 @@
 'use strict';
 
 // 应用名集中在这里定义，前端通过 /api/config 读取，改名只需改这一处。
-const APP_NAME = process.env.APP_NAME || '日子';
+const APP_NAME = process.env.APP_NAME || '时间管理局';
 
 // 近期提醒首页的窗口天数：只显示距今天数 <= 该值的条目。
 const UPCOMING_DAYS = Number(process.env.UPCOMING_DAYS || 30);

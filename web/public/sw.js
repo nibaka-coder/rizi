@@ -5,8 +5,8 @@
    - 认证接口 /api/auth/*：绝不缓存，始终走网络
    - 退出登录：前端发消息 CLEAR_DATA，清空数据缓存，杜绝登出后从缓存看到旧数据
 */
-const CACHE = 'rizi-v4';          // 静态外壳
-const DATA_CACHE = 'rizi-data-v4'; // 数据接口（登出时清空）
+const CACHE = 'rizi-v5';          // 静态外壳
+const DATA_CACHE = 'rizi-data-v5'; // 数据接口（登出时清空）
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (e) => {

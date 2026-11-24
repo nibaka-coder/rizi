@@ -7,6 +7,6 @@ const auth = require('./src/services/auth');
 
 app.listen(PORT, '0.0.0.0', () => {
   auth.pruneSessions();
-  console.log(`日子服务已启动: http://0.0.0.0:${PORT}`);
+  console.log(`时间管理局服务已启动: http://0.0.0.0:${PORT}`);
   backup.startScheduler();
 });

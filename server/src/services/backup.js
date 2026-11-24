@@ -34,7 +34,7 @@ function exportData() {
 // mode: 'merge'（默认，按 id 存在则跳过，不存在则插入）| 'replace'（清空后导入）
 function importData(payload, mode = 'merge') {
   if (!payload || payload.format !== BACKUP_FORMAT) {
-    throw new Error('不是「日子」的备份文件（format 不匹配）');
+    throw new Error('不是「时间管理局」的备份文件（format 不匹配）');
   }
   if (!payload.data || typeof payload.data !== 'object') {
     throw new Error('备份文件缺少 data 字段');
