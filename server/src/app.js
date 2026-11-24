@@ -43,12 +43,16 @@ app.get('/api/auth/status', (req, res) => {
 
 // 首次设置密码（仅当尚未设置过时可用）
 app.post('/api/auth/setup', (req, res) => {
+  const lockMs = auth.lockRemainingMs(req);
+  if (lockMs) return res.status(429).json({ error: `尝试次数过多，请 ${Math.ceil(lockMs / 60000)} 分钟后再试` });
   if (auth.hasPassword()) return res.status(409).json({ error: '密码已设置' });
   const password = String(req.body?.password || '');
   if (password.length < 6) return res.status(400).json({ error: '密码至少 6 位' });
   if (config.SETUP_KEY && String(req.body?.setupKey || '') !== config.SETUP_KEY) {
-    return res.status(403).json({ error: '初始化密钥错误' });
+    auth.recordFailure(req);
+    return res.status(403).json({ error: '初始化密钥错误或尝试次数过多' });
   }
+  auth.clearFailures(req);
   auth.setPassword(password);
   auth.deleteAllSessions();
   const token = auth.createSession();
@@ -58,9 +62,15 @@ app.post('/api/auth/setup', (req, res) => {
 
 // 登录
 app.post('/api/auth/login', (req, res) => {
+  const lockMs = auth.lockRemainingMs(req);
+  if (lockMs) return res.status(429).json({ error: `尝试次数过多，请 ${Math.ceil(lockMs / 60000)} 分钟后再试` });
   if (!auth.hasPassword()) return res.status(409).json({ error: '尚未设置密码' });
   const password = String(req.body?.password || '');
-  if (!auth.verifyPassword(password)) return res.status(401).json({ error: '密码错误' });
+  if (!auth.verifyPassword(password)) {
+    auth.recordFailure(req);
+    return res.status(401).json({ error: '密码错误或尝试次数过多' });
+  }
+  auth.clearFailures(req);
   const token = auth.createSession();
   res.cookie(auth.COOKIE_NAME, token, auth.cookieOptions());
   res.json({ ok: true });

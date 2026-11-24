@@ -97,6 +97,43 @@ function requireAuth(req, res, next) {
   return res.status(401).json({ error: '未登录', code: 'UNAUTHORIZED' });
 }
 
+// ---------- 暴力破解防护：按 IP 的失败次数限流 ----------
+// 连续失败 MAX_FAILS 次后锁定 LOCK_MS 毫秒。仅内存保存，进程重启后清零。
+// 对单用户自托管场景足够；如需跨重启持久可在数据库建表，当前无必要。
+const MAX_FAILS = 5;
+const LOCK_MS = 15 * 60 * 1000; // 15 分钟
+const failures = new Map(); // ip -> { count, lockedUntil }
+
+function clientIp(req) {
+  const xf = req.headers['x-forwarded-for'];
+  if (xf) return String(xf).split(',')[0].trim();
+  return req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
+// 是否被锁定；返回剩余毫秒数（0 表示未锁定）
+function lockRemainingMs(req) {
+  const rec = failures.get(clientIp(req));
+  if (!rec) return 0;
+  if (rec.lockedUntil && rec.lockedUntil > Date.now()) return rec.lockedUntil - Date.now();
+  if (rec.lockedUntil && rec.lockedUntil <= Date.now()) failures.delete(clientIp(req));
+  return 0;
+}
+
+function recordFailure(req) {
+  const ip = clientIp(req);
+  const rec = failures.get(ip) || { count: 0, lockedUntil: 0 };
+  rec.count += 1;
+  if (rec.count >= MAX_FAILS) {
+    rec.lockedUntil = Date.now() + LOCK_MS;
+    rec.count = 0;
+  }
+  failures.set(ip, rec);
+}
+
+function clearFailures(req) {
+  failures.delete(clientIp(req));
+}
+
 // 已登录时访问登录/设置页，可选放行
 function cookieOptions() {
   return {
@@ -121,4 +158,7 @@ module.exports = {
   requireAuth,
   readToken,
   cookieOptions,
+  lockRemainingMs,
+  recordFailure,
+  clearFailures,
 };

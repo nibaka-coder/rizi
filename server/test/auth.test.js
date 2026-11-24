@@ -100,6 +100,19 @@ test('cookieOptions 安全属性正确', () => {
   assert.ok(opts.maxAge > 0);
 });
 
+test('登录失败限流：连续失败达上限后锁定，成功清零', () => {
+  const fakeReq = { ip: '10.0.0.99', headers: {}, socket: { remoteAddress: '10.0.0.99' } };
+  assert.equal(auth.lockRemainingMs(fakeReq), 0);
+  for (let i = 0; i < 4; i++) {
+    auth.recordFailure(fakeReq);
+    assert.equal(auth.lockRemainingMs(fakeReq), 0, `第 ${i + 1} 次失败不应锁定`);
+  }
+  auth.recordFailure(fakeReq); // 第 5 次触发锁定
+  assert.ok(auth.lockRemainingMs(fakeReq) > 0, '第 5 次失败应锁定');
+  auth.clearFailures(fakeReq); // 成功后清零
+  assert.equal(auth.lockRemainingMs(fakeReq), 0);
+});
+
 test('cleanup', () => {
   try {
     db.close();
